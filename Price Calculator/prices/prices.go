@@ -1,11 +1,15 @@
 package prices
 
-import "fmt"
+import (
+	"fmt"
+
+	filemanager "example.com/m/fileManager"
+)
 
 type TaxIncPriceJob struct {
-	TaxRate      float64
-	InputPrices  []float64
-	TaxIncPrices map[string]float64
+	TaxRate      float64            `json:"tax_rate"`
+	InputPrices  []float64          `json:"input_prices"`
+	TaxIncPrices map[string]float64 `json:"tax_included_prices"`
 }
 
 func (job *TaxIncPriceJob) Process() {
@@ -13,10 +17,9 @@ func (job *TaxIncPriceJob) Process() {
 
 	for _, price := range job.InputPrices {
 		result[fmt.Sprintf("%0.3f", price)] = price * (1 + job.TaxRate)
-		job.TaxIncPrices[fmt.Sprintf("%0.1f", price)] = price * (1 + job.TaxRate)
 	}
-
-	fmt.Println(result)
+	job.TaxIncPrices = result
+	filemanager.WriteJSON(fmt.Sprintf("data_%.0f.json", job.TaxRate*100), job)
 }
 
 func New(taxRate float64) *TaxIncPriceJob {
